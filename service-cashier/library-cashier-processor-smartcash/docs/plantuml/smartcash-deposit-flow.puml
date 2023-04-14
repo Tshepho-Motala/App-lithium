@@ -1,0 +1,81 @@
+.SmartCash Deposit Flow
+[plantuml]
+----
+
+@startuml
+header SmartCash Deposit Flow
+footer Page %page% of %lastpage%
+skinparam sequenceMessageAlign center
+actor Player
+box "Frontend" #LightBlue
+participant Portal
+participant MobilePhone
+end box
+participant Lithium
+participant SmartCash
+autonumber
+
+Player -> Portal  : Choose SmartCash deposit
+activate Portal
+Portal --> Player : Show payment page
+Player -> Portal : pay button is pressed(amount)
+Portal -> Lithium : Deposit(amount)
+activate Lithium
+Lithium -> SmartCash: getAuthorizationToken(client_id, secret_key)
+activate SmartCash
+SmartCash --> Lithium: getAuthorizationToken(auth_token)
+deactivate SmartCash
+Lithium -> SmartCash : getCustomerInfo(auth_token, msisdn, countryCode, currencyCode)
+activate SmartCash
+SmartCash --> Lithium : getCustomerInfo(lastName, firstName, walletId)
+deactivate SmartCash
+Lithium -> SmartCash : payment(auth_token, countryCode, currencyCode, amount, walletId, msisdn, trnasctionId)
+activate SmartCash
+SmartCash --> Lithium : payment(status="DECLINED/SUCCESS/PENDING", error)
+alt#Gold  #Pink status="DECLINED"
+    Lithium --> Portal: Deposit(status="DECLINED", error)
+    Portal --> Player: Show error
+else #LightGreen status="SUCCESS/PENDING"
+    Lithium --> Portal: Deposit(status="WAITFORPROCESSOR")
+    deactivate Lithium
+    Portal --> Player: Show spinner
+    ref over Portal: Get Transaction status show result
+end
+
+SmartCash -> MobilePhone: Confirm notification
+activate MobilePhone
+MobilePhone -> Player : Show confirmation screen
+Player --> MobilePhone : Confirm
+MobilePhone --> SmartCash: Comfirm
+deactivate MobilePhone
+==Get Transaction status show result==
+    Portal -> Lithium: GetProviderProperties(client_processing_timeout)
+    activate Lithium
+    Lithium --> Portal: GetProviderProperties(retry list)
+    deactivate Lithium
+    loop while status="WAITFORPROCESSOR"
+               Portal -> Lithium: GetTransactionStatus(transactionId)
+               activate Lithium
+               Lithium -> Portal: GetTransactionStatus(status="WAITFORPROCESSOR")
+               deactivate Lithium
+ == Webhook==
+    SmartCash -> Lithium : Notification(transactionId, signature)
+    activate Lithium
+    Lithium -> SmartCash: GetTransactionStatus(auth_token, transactionId)
+    activate SmartCash
+    SmartCash --> Lithium: GetTransactionStatus(status, error)
+    deactivate SmartCash
+    Lithium -> Lithium: Update transaction status and player balance
+    Lithium --> SmartCash: HTTP_OK
+    deactivate Lithium
+    deactivate SmartCash
+    Portal -> Lithium: GetTransactionStatus(transactionId)
+    activate Lithium
+    Lithium --> Portal: GetTransactionStatus(status="SUCCESS/DECLINED", error)
+    deactivate Lithium
+    
+    end
+    Portal --> Player: Show final result
+deactivate Portal
+
+@enduml

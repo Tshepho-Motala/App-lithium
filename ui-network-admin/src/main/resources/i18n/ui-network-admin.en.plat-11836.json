@@ -1,0 +1,76 @@
+{
+    "UI_NETWORK_ADMIN": {
+        "PLAYER": {
+            "LOSS_LIMITS": {
+                "LABELS": {
+                    "ANNUAL_THRESHOLD": "Annual Warning Threshold"
+                }
+            }
+        },
+        "LIMITSAGE": {
+            "DOMAIN": {
+                "ANNUALLOSSLIMIT": {
+                    "NAME": "Annual Loss Limit",
+                    "PLACEHOLDER": "Annual Loss Limit",
+                    "DESCRIPTION": ""
+                }
+            }
+        },
+        "LIMITS": {
+            "SET": "Set",
+            "MODIFY": "Modify",
+            "NOTSET": "Not Set.",
+            "PLAYER": {
+                "ANNUALLOSSLIMIT": {
+                    "LABEL": "Annual Loss Limit",
+                    "DESCRIPTION": "Set the annual loss amount for the player"
+                }
+            },
+            "DOMAIN": {
+                "REMOVE": {
+                    "LIMIT": {
+                        "SUCCESS": "Domain limit removed"
+                    },
+                    "MAXLIMIT": {
+                        "SUCCESS": "Domain max limit removed"
+                    }
+                },
+                "CHANGE": {
+                    "LIMIT": {
+                        "ANNUALWIN": "Change Global Annual Win Limit",
+                        "ANNUALLOSS" : "Change Global Annual Loss Limit"
+                    }, 
+                    "MAXLIMIT": {
+
+                    }
+                },
+                "MAXDAILYLOSSLIMIT": {
+                    "LABEL": "Max Daily Loss Limit",
+                    "DESCRIPTION": "Set the maximum daily loss amount"
+                },
+                "ANNUALLOSSLIMIT": {
+                    "LABEL": "Annual Loss Limit",
+                    "DESCRIPTION": "Set the annual loss amount"
+                },
+                "ANNUALWINLIMIT": {
+                    "LABEL": "Annual Win Limit",
+                    "DESCRIPTION": "Set the annual Win amount"
+                },
+                "MAXANNUALWINLIMIT": {
+                    "LABEL": "Max Monthly Loss Limit",
+                    "DESCRIPTION": "Set the maximum monthly win amount"
+                }
+            }
+        },
+        "THRESHOLD_HEADERS": {
+            "LOSS_LIMIT_USED_ANNUALLY": "Annual Loss Limit Used",
+            "ANNUAL_THRESHOLD": "Annual Threshold",
+            "ANNUAL_LOSS_LIMIT": "Annual Loss Limit"
+        }
+    },
+    "GLOBAL": {
+        "GRANULARITY": {
+            "ANNUAL": "Annual"
+        }
+    }
+}

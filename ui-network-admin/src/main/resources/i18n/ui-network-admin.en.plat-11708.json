@@ -1,0 +1,10 @@
+{
+  "UI_NETWORK_ADMIN": {
+    "CASHIER_CONFIG": {
+      "PROFILES_TAB": {
+        "BASE_HAS_SUCH_NAME": "The code entered already exists for this domain"
+      },
+      "PROFILES_": "Profiles"
+    }
+  }
+}

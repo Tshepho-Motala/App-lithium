@@ -1,0 +1,80 @@
+= LSPLAT-8826 PLAT-8048 - [FEATURE]: Being able to re-trigger auto-restriction rules for players via Player Mass Action
+Irwin Herridge <irwin.herridge@wonderlabz.com>
+1.0, November 25, 2022: LSPLAT-882 PLAT-8048 - [FEATURE]: Being able to re-trigger auto-restriction rules for players via Player Mass Action
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Table of Contents
+:icons: font
+:url-quickref: https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/
+:table-caption!:
+
+//This is done to keep formatting aligned with gitlab
+****
+[verse,,]
+____
+link:../../readme.adoc[Home]
+____
+****
+
+== Description
+=== Jira
+* link:https://playsafe.atlassian.net/browse/LSPLAT-8826[LSPLAT-8826]
+* link:https://livescoregroup.atlassian.net/browse/PLAT-8048[PLAT-8048]
+
+=== Gitlab
+* Branch: origin/feature/LSPLAT-8826_PLAT-8048_Re-trigger-Auto-Restriction-Rules_Player_Mass_Action
+* MR: link:https://gitlab.com/playsafe/lithium/app-lithium-full/-/merge_requests/6044[]
+
+=== External Dependencies
+==== Swagger (To be completed *before* development starts)
+* Short description of swagger changes that will be required.
+* TL to facilitate timeline and communication to GW/FE for the changes.
+
+TIP: N/A
+
+==== DWH
+* Short description of any changes that would need to be communicated/discussed with DWH.
+* TL to facilitate.
+
+TIP: N/A
+
+==== Other
+* Any other external providers that might need consideration. e.g. eXtremePush/Roxor
+
+TIP: N/A
+
+=== Business
+
+==== Technical
+
+* Add a new action menu (accordion) to Player Mass Action that may be used to trigger the auto-restrictions job for each player on the CSV that was uploaded to the Mass Player Update job. (this will allow us to trigger auto-restrictions on demand)
+
+** Possible with a tickbox (trigger auto-restriction rules). When tickbox is unchecked, the job will then not be triggered for the uploaded players on the CSV file.
+
+==== Acceptance criteria
+
+* Create a new accordion (action menu) to player mass action with a tickbox to have the auto-restrictions process triggered for each user that was uploaded onto the CSV file.
+
+* When the auto-restrictions rules run for a player, all active rules will be triggered, and if the player meets the requirements of a rule, then that rule will act as it would whenever the auto-restrictions job runs.
+
+== Architecture
+
+As per the technical writeup that was done inittially as part of the ticket description:
+
+. Add a new Auto-Restriction Rules action to Mass Player Update
+* The basic html Accordion for the trigger on the auto-restriction job processing is already provided as part of this TA.
+** Add Translations for the accordion on `src/main/resources/static/scripts/directives/player/mass-update/mass-player-update.html`
+** Change the default behaviuour of all accordions to be closed by default. This would allow the backoffice user to easily navigate to the accordion that they wish to action.
+** Sort the accordions alphabetically by accordion name. _note the image below is only for visual representation of how the accordion would look like_
+
+image::../assets/LSPLAT-3969 PLAT-4679 - Auto-Restriction Rules Accordion.png[]
+
+[start=2]
+. Implement the new Auto-Restriction action
+* This implementation should follow the same pattern that was used for the other actions.
+** Note that the API is already available and was implemented as a synchrounous call to service-limit from the SignupService. You may reuse this same API to re-trigger the auto-restrictions job per player that was uploaded to Mass Player Action.
+
+include::../plantuml/sequence/overview.trigger-mass-actions-processing-stage-2.puml[]
+
+include::../plantuml/sequence/stage-2.mass-action.re-trigger-auto-restriction-rules.puml[]

@@ -1,0 +1,30 @@
+server:
+  port: 8696
+
+spring:
+  application:
+    name: service-kyc-provider-onfido
+  datasource:
+    url: jdbc:mysql://localhost/lithium_kyc_onfido
+    username: root
+    password: mysql
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  cloud:
+    stream:
+      bindings:
+        register-notification-output:
+          binder: rabbit
+          destination: register-notification-queue
+          producer:
+            required-groups: register-notification-trigger-group
+        register-notification-type-output:
+          binder: rabbit
+          destination: register-notification-type-queue
+          producer:
+            required-groups: register-notification-type-trigger-group
+
+eureka:
+  instance:
+    appname: service-kyc-provider-onfido

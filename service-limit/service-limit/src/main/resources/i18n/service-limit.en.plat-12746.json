@@ -1,0 +1,13 @@
+{
+  "SERVICE-LIMIT": {
+    "RESTRICTIONS": {
+      "RULESETS": {
+        "RULE": {
+          "FIELD": {
+            "BIOMETRIC_STATUS": "Biometric Status"
+          }
+        }
+      }
+    }
+  }
+}

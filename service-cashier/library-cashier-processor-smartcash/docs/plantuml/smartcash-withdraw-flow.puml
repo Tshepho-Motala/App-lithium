@@ -1,0 +1,63 @@
+.SmartCash Withdraw Flow
+[plantuml]
+----
+
+@startuml
+header SmartCash Withdraw Flow
+footer Page %page% of %lastpage%
+skinparam sequenceMessageAlign center
+actor Player
+box "Frontend" #LightBlue
+participant Portal
+end box
+participant Lithium
+actor LBOOperator
+participant SmartCash
+autonumber
+
+Player -> Portal  : Choose SmartCash withdraw
+activate Portal
+Portal --> Player : Show withdraw page
+Player -> Portal : Withdraw button is pressed(amount)
+Portal -> Lithium : Withdraw(amount)
+activate Lithium
+Lithium -> Lithium : Create transaction, reserve amount
+Lithium --> Portal: Withdraw(status="WAITFORPROCESSOR")
+deactivate Lithium
+Portal --> Player: Withdraw is requested
+
+LBOOperator -> Lithium : Approve Withdraw(transactionId)
+activate Lithium
+Lithium -> SmartCash: getAuthorizationToken(client_id, secret_key)
+activate SmartCash
+SmartCash --> Lithium: getAuthorizationToken(auth_token)
+deactivate SmartCash
+Lithium -> SmartCash : getCustomerInfo(auth_token, msisdn, countryCode, currencyCode)
+activate SmartCash
+SmartCash --> Lithium : getCustomerInfo(lastName, firstName, walletId)
+deactivate SmartCash
+Lithium -> SmartCash : payout(auth_token, countryCode, currencyCode, amount, walletId, msisdn, trnasctionId)
+activate SmartCash
+SmartCash --> Lithium : payout(status="DECLINED/SUCCESS/PENDING", error)
+
+alt#Gold  #Pink status="DECLINED"
+    Lithium --> LBOOperator: Withdraw(status="DECLINED", error)
+else #LightGreen status="SUCCESS/PENDING"
+    Lithium --> LBOOperator: Withdraw(status="WAITFORPROCESSOR")
+    ref over Lithium: Webhook
+    deactivate Lithium
+end
+
+ == Webhook==
+    activate SmartCash
+    SmartCash -> Lithium : Notification(transactionId, signature)
+    activate Lithium
+    Lithium -> SmartCash: GetTransactionStatus(transactionId)
+    activate SmartCash
+    SmartCash --> Lithium: GetTransactionStatus(status, error)
+    deactivate SmartCash
+    Lithium -> Lithium: Update transaction status and player balance
+    Lithium --> SmartCash: HTTP_OK
+    deactivate Lithium
+    deactivate SmartCash
+@enduml

@@ -1,0 +1,38 @@
+{
+  "UI_NETWORK_ADMIN": {
+    "PLAYER": {
+      "CASINO_HISTORY": {
+        "TABLE": {
+          "DOMAIN_NAME": {
+            "LABEL": "Domain Name"
+          },
+          "USER_ID": {
+            "LABEL": "User ID"
+          },
+          "USER_GUID": {
+            "LABEL": "User GUID"
+          },
+          "USER_NAME": {
+            "LABEL": "User Name"
+          },
+          "CURRENCY_CODE": {
+            "LABEL": "Currency Code"
+          }
+        }
+      }
+    },
+    "BET_HISTORY": {
+      "HEADER": {
+        "TITLE": "Bet History",
+        "DESCRIPTION": "View and filter on Casino Bet History per domain",
+        "SELECT_DOMAIN": "Select a domain to get started",
+        "VIEWING_BETS": "Viewing bets"
+      },
+      "FILTER": {
+        "USER_GUD": {
+          "LABEL": "User GUID"
+        }
+      }
+    }
+  }
+}

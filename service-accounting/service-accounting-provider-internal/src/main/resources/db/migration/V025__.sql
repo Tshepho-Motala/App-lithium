@@ -1,0 +1,1 @@
+UPDATE account_code SET code = 'GF_BALANCE_RECOVERY_DEBIT' WHERE code = 'GF_FRAUD_CB_ACCOUNT';

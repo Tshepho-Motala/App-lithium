@@ -1,0 +1,122 @@
+spring:
+  jackson:
+#    default-property-inclusion: always
+    mapper:
+      default-view-inclusion: true
+  datasource:
+    url: jdbc:mysql://localhost/lithium_cashier
+    username: root
+    password: mysql
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy #org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy #org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    show-sql: false
+  cloud:
+    stream:
+      bindings:
+        transactiontyperegisteroutput:
+          group: transactiontyperegistergroup
+          binder: rabbit
+          destination: transactiontyperegisterqueue
+          producer:
+            required-groups: transactiontyperegistergroup
+        processorsregisterinput:
+          group: processorsregistergroup
+          binder: rabbit
+          destination: processorsregisterqueue
+        statsoutputv2:
+          group: statsgroupv2
+          binder: rabbit
+          destination: statsqueuev2
+          producer:
+            required-groups: statsgroupv2
+        autorestrictiontriggeroutput:
+          group: autorestrictiontriggergroup
+          binder: rabbit
+          destination: autorestrictiontriggerqueue
+          producer:
+            required-groups: autorestrictiontriggergroup
+        geooutput:
+          group: geogroup
+          binder: rabbit
+          destination: geoqueue
+          producer:
+            required-groups: geogroup
+        transaction-label-accounting-output:
+          group: transaction-label-accounting-group
+          binder: rabbit
+          destination: transaction-label-accounting-queue
+          producer:
+            required-groups: transaction-label-accounting-group
+        userattributestriggerinput :
+          group: user-attributes-trigger-group-cashier
+          binder : rabbit
+          destination : userattributestriggerqueue
+  thymeleaf:
+    cache: false
+  rabbitmq:
+    listener:
+      retry:
+        max-attempts: 20
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+logging:
+  level:
+#    ROOT: WARN
+#    lithium.service.accounting.provider.internal: INFO
+    lithium.service.cashier: INFO
+#    org.hibernate: INFO
+#    org.hibernate.type: INFO
+#    org.hibernate.type.descriptor.sql: INFO
+#    org.hibernate.stat: INFO
+
+server:
+  port: 9791
+
+feign:
+  client:
+    config:
+      default:
+        readTimeout: 20000
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 20000
+
+ribbon:
+  ReadTimeout: 30000
+  ConnectTimeout: 30000
+
+lithium:
+  service:
+    rabbit:
+      exchange:
+        fanout-exchange-list:
+          - service.cashier.first.deposit
+    cashier:
+      jobs:
+        cleanup-transaction-processing-attempt:
+          cron: 0 0/10 * * * *
+          page-count-per-once: 5
+#      machine-apply-access-rule-block : false
+#      allow-multiple-withdrawals : false
+  services:
+    db:
+      load-test-data: false
+    cashier:
+      transaction-geo-device-labels:
+        enabled: true
+      transaction-default-ttl: 86400000 # 1 day
+      cleanup-scheduling-in-milliseconds: 15000
+      finish-pending-cancel-delay-ms: 180000
+      finish-pending-cancel-interval-ms: 120000
+      transaction-extra-fields-in-milliseconds: 300000

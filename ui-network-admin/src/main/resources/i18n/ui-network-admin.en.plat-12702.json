@@ -1,0 +1,14 @@
+{
+  "UI_NETWORK_ADMIN": {
+    "USER": {
+      "ACCOUNT_TYPE_CODE": {
+        "DESCRIPTION": {
+          "GF_BALANCE_RECOVERY_DEBIT": "To be used when balance needs voiding to null the account (Suspicious Account, Circumvention of any type..)",
+          "GF_BALANCE_RECOVERY_CREDIT": "To be used to credit balance after it had previously been voided to null the account (Suspicious Account, Circumvention of any type..)",
+          "GF_SE_BALANCE_WITHHOLD_DEBIT": "To be used when temporary withholding balance until bank details are received.",
+          "GF_SE_BALANCE_WITHHOLD_CREDIT": "To be used to credit balance that had previously been temporarily removed to withhold balance until bank details were received."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+[plantuml]
+----
+@startuml
+'https://plantuml.com/sequence-diagram
+
+    box "Evolution" #LightGreen
+        participant "Generic Operator Wallet API" as operator
+    end box
+
+    box "Lithium" #LightBlue
+        participant "Evolution Casino Provider" as provider
+        participant "Casino Client" as casino
+    end box
+
+    group Gameplay Endpoints
+        alt Get Balance
+            operator ->> provider++: get balance
+            provider ->> casino++:
+            casino -->> provider--:
+            provider -->> operator--:
+        else Place Bet
+            operator ->> provider++: place a bet
+            provider ->> casino++:
+            casino -->> provider--:
+            provider -->> operator--:
+        else Award winnings
+            operator ->> provider++:Award Winnings
+            provider ->> casino++:
+            casino -->> provider--:
+            provider -->> operator--:
+        else Award Loss
+            operator ->> provider:Award Loss
+            provider ->> casino++:
+            casino -->> provider--:
+            provider -->> operator--:
+        end
+    end
+
+@enduml

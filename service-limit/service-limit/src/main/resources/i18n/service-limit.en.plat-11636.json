@@ -1,0 +1,6 @@
+{
+	"SERVICE-LIMIT": {
+		"ANNUAL_LOSS_LIMIT_REACHED": "Your annual loss limit of {0} has been reached.",
+		"ANNUAL_WIN_LIMIT_REACHED": "Your annual win limit of {0} has been reached."
+	}
+}

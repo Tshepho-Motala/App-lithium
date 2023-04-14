@@ -1,0 +1,28 @@
+<div>
+	<fieldset>
+		<div class="input-group">
+			<input type="text"
+				   ng-disabled="!to.editable"
+				   ng-model="model[options.key]"
+				   placeholder="{{to.placeholder}}"
+				   uib-typeahead="option[to.labelProp] as option[to.displayProp] for option in searchTypeAhead($viewValue)"
+				   typeahead-loading="loadingLocations"
+				   typeahead-no-results="noResults"
+				   typeahead-min-length="2"
+				   typeahead-show-hint="true"
+				   typeahead-wait-ms="500"
+				   typeahead-editable="to.editable"
+				   typeahead-on-select="selectTypeAhead($item, $model, $label, $event)"
+				   class="form-control"/>
+			<div class="input-group-btn">
+				<button type="button" class="btn btn-default" ng-click="resetTypeAhead()"><i class="fa fa-remove"></i></button>
+			</div>
+		</div>
+		<div ng-show="loadingLocations" class="overlay">
+			<i class="fa fa-refresh fa-spin"></i>
+		</div>
+		<div ng-show="noResults" class="form-group has-error">
+			<span class="help-block"><i class="fa fa-remove"></i>&nbsp;No Suggestions Found</span>
+		</div>
+	</fieldset>
+</div>

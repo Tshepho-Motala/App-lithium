@@ -1,0 +1,75 @@
+server.port: 9812
+
+spring:
+  application:
+    name: service-casino-provider-sportsbook
+  datasource:
+    url: jdbc:mysql://localhost/lithium_casino_sportsbook
+    username: root
+    password: mysql
+  jpa:
+#    show-sql: true
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  cloud:
+    stream:
+      bindings:
+        performance-test-settlement-queue-input:
+          destination: performance-test-sportsbook-settlement-queue
+          group: performance-test-sportsbook-settlement-group
+          consumer:
+            concurrency: 1
+          binder: rabbit
+        performance-test-settlement-queue-output:
+          destination: performance-test-sportsbook-settlement-queue
+          group: performance-test-sportsbook-settlement-group
+          producer:
+            required-groups: performance-test-sportsbook-settlement-group
+          binder: rabbit
+
+lithium:
+  services:
+    casino:
+      provider:
+        sportsbook:
+          pending-reservation-job:
+            delay-ms: 300000
+            fetch-size: 10
+            expire-after-ms: 3600000
+          sportsbook-settlement-queue:
+            consumers: 1
+          queue-rate-limiter:
+            settlement-queue:
+              limit-win:
+                enabled: false
+                minDelayMs: 0
+                maxDelayMs: 0
+              limit-resettle:
+                enabled: false
+                minDelayMs: 0
+                maxDelayMs: 0
+              limit-loss:
+                enabled: true
+                minDelayMs: 50
+                maxDelayMs: 100
+          performance-testing:
+            # This will stack all settlements into a queue without processing them, which can then
+            # be released after the performance test has completed with creating bets to allow for
+            # bulk settlement requests being sent to scp-sportsbook. These bulk updates will then
+            # be sent back into the /settle endpoint following normal execution flow.
+            settle-multi:
+              # If enabled, then settlement requests will queue up via the /settle/perf-test API
+              # until set to false which would release the batch
+              queue-into-batch: true
+              #If not enabled, then the /settle/perf-test endpoint will not be available for testing
+              block-endpoint: true
+
+eureka:
+  instance:
+    appname: service-casino-provider-sportsbook
+
+logging:
+  level:
+    lithium.service.casino.provider.sportsbook: INFO

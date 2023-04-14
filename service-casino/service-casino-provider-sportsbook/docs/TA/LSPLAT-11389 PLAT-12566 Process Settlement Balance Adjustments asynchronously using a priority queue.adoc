@@ -1,0 +1,114 @@
+= LSPLAT-11389 PLAT-12566 Process Settlement Balance Adjustments asynchronously using a priority queue
+Irwin Herridge <irwin.herridge@wonderlabz.com>
+1.0, March 20, 2022: Process Settlement Balance Adjustments asynchronously using a priority queue
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Table of Contents
+:icons: font
+:source-highlighter: coderay
+:url-quickref: https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/
+:table-caption!:
+
+//This is done to keep formatting aligned with gitlab
+****
+[verse,,]
+____
+link:../../readme.adoc[Home]
+____
+****
+
+WARNING: You might need to install graphviz to render the component models on IntelliJ on plantUML if not viewed on GitLab - see https://playsafe.atlassian.net/wiki/spaces/LITHIUM/pages/1674936347/How+To+Setup+Lithium+Local+Development#Noteworthy-Extensions.1[IntelliJ: PlantUML diagramming tool] +
+The download can be made from: https://graphviz.gitlab.io/download/
+
+== Description
+=== Jira
+* link:https://playsafe.atlassian.net/browse/LSPLAT-11389[LSPLAT-11389]
+* link:https://jira.livescore.com/browse/PLAT-12566[PLAT-12566]
+
+=== Gitlab
+* Branch: origin/feature/LSPLAT-11389_PLAT-12566_Process_Settlement_Balance_Adjustments_asynchronously_using_a_priority_queue
+* MR: link:https://gitlab.com/playsafe/lithium/app-lithium-full/-/merge_requests/6516[]
+
+=== External Dependencies
+==== Swagger (To be completed *before* development starts)
+* Short description of swagger changes that will be required.
+* TL to facilitate timeline and communication to GW/FE for the changes.
+
+==== DWH
+
+[quote, Neil Stone ~ March 15 2023 at 11:49 AM]
+@Irwin Herridge as discussed no impact on the data side as we don’t currently use lithium_casino_sportsbook in any of our main pipeline. (https://livescoregroup.atlassian.net/browse/PLAT-12566?focusedCommentId=239705[jira link])
+
+==== Other
+* Any other external providers that might need consideration. e.g. eXtremePush/Roxor
+
+TIP: N/A
+
+=== Business
+
+The settlement process needs to be improved.
+
+Tasks related to this process/pipeline improvement will live in this epic: https://livescoregroup.atlassian.net/browse/PLAT-12563[PLAT-12563]
+
+=== Problem Statement
+No changes on the platform have degraded the performance of individual bets, settlements or any other transactions that adjust the wallet. Architecturally, multiple settlements per user are queued up for that user. All transactions in the queue time out after 6s. This is the current design. The amount of individual bets per settlement per user has increased, leading to those settlements taking up to 6s to settle or timeout after 6s, depending on the number of settlements. The average time to settle a single bet is approximately 116ms. This means that if we receive more than 51 bets for a user in parallel, they will time out. Settlements are sent in batches with many users in the same batch. For example, if we receive 1000 settlements for 1000 different users, the batch will complete in approximately 116ms. If the batch has more than 51 bets for the same user, the batch will take up to 6s to complete and will have some failed transactions. If there are 100 batches, and a customer only has a settlement in the last batch, they would have to wait for the first 99 batches to complete. This queue is managed outside of the platform. There thus, are scenarios where the delay of individual batches is causing an increase in delays on the last batch.
+
+The possible solutions to mitigate this behaviour:
+
+. Change the order of data in the batches to optimise the amount of transactions per unique users in individual batches. This would require a change with DraftKings
+
+. Increase the batch size. The more parallel transactions we settle the faster we will get through the queue of batches.
+
+. Queue transactions on the platform side so that we respond to the caller quicker so as not to delay full batches. This would require a change in how we process on the Lithium side. We would need to reserve transaction IDs before adjusting the wallet, then adjust the wallet in a more efficient manner within the platform to prioritise parallel adjustments for different users rather than parallel adjustments for the same user.
+
+. Implement alternative processing for losses. As they have no balance impact, but are still stored as transaction, there may be an opportunity for improvement of settlements if we were to queue or remove a portion of the workload for these transactions.
+
+=== Architecture
+
+include::../plantuml/sportsbook-settle-async.puml[]
+
+==== Introduction
+Option 3 has been selected as the most viable solution to implement by using a  priority queue to settle all balance adjustments asynchronously.
+
+* Wins to take the highest priority.
+* Resettlements will take second priority
+* Losses will take the lowest priority.
+
+==== Technical
+Sportsbook settlement API will be changed to process all settlements via a queue and have an acknowledgement response returned to the caller where the API contract remains unchanged.
+
+The existing response body includes the following response fields:
+
+* `balance`
+* `balanceCurrencyCode`
+* `transactionId`
+
+When a settlement request is sent, Lithium will respond with a Status 200 with a transactionId with a zero balance and default domain balanceCurrencyCode
+
+. The settlement will be stored in the settlement DB before adding it to a queue for async balance adjustment. There will no longer be a need to lock on the user, and requests should process and respond swiftly.
+
+. The priority of the adjustment will be decided based on whether the settlement is for a win, resettlement or a loss, with wins taking the highest priority in the queue.
+
+. Lithium will respond to Sportsbook Gateway with a Status 200, and the transactionId will remain unchanged as the id reference on the Settlement DB created on point#1 (can also be known as the Queue ID).
+
+Making the settlement balance adjustments asynchronously with wins taking the highest priority, then resettlement and last loss transactions:
+
+. All balance adjustments will be processed concurrently, and wins will be processed first and then resettlement transactions. All loss transactions will be processed last.
+
+. On completion of a balance adjustment, the balance post-adjustment will be updated on the settlement DB.
+
+.. This should provide us with metrics on how long a settlement took from start to end.
+
+We do not need to return the adjusted balance on the settlement response, hence replying with a zero balance for backward compatibility on the current API. Players logged into their accounts will get balance updates with `GET /player/{domainName}/all/balances` to Lithium (e.g. same as when making a manual adjustment on LBO, the new balance reflects from polling player’s balance +/- every 30 seconds)
+
+==== NFRs
+
+* We need to visualise WINs and LOSSes processed in the queue on Grafana graphs.
+** How long it takes to process the WINs and LOSSes from the queue?
+** How many WINs and Losses there still need to be processed?
+
+* We should be able to add Alerts on WINs taking longer to process.
+** Avg time it takes until the balance is adjusted.
+
+* Avg time it takes to acquire a lock on accounting

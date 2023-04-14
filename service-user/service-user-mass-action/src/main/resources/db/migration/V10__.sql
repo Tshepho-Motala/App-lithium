@@ -1,0 +1,1 @@
+ALTER TABLE `mass_action_meta` ADD COLUMN `auto_restriction_rule` bit(1) DEFAULT NULL, ALGORITHM = COPY, LOCK = SHARED;

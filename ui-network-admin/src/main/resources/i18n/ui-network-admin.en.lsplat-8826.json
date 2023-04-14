@@ -1,0 +1,14 @@
+{
+  "UI_NETWORK_ADMIN": {
+    "PLAYERS": {
+      "MASS_UPDATE": {
+        "ACTIONS": {
+          "AUTO_RESTRICTION_RULES": {
+            "HEADING" : "Auto-Restriction Rules",
+            "LABEL": "Re-trigger Auto-Restriction Rules for Player"
+          }
+        }
+      }
+    }
+  }
+}

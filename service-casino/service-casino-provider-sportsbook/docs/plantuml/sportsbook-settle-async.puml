@@ -1,0 +1,29 @@
+.sportsbook settlements
+[plantuml]
+----
+
+@startuml
+
+actor GW as gw
+participant "scp-sportsbook" as sb
+database lithium_casino_sportsbook as db
+participant "svc-accounting-pr-internal" as ac
+queue "rabbitmq" as r
+
+gw -> sb++: /settle - settlement
+
+sb --> db: store settlement
+sb -> sb: checks if win/loss and sets priority flag on rabbitmq if a win
+sb --> r: add settlement to queue with priority
+sb -> gw: setllement response
+
+== Async adjustments ==
+
+r --> sb: get next settlement
+sb ->ac++: balance adjust
+ac -> sb: balance adjust response
+sb --> db: update settlement
+
+@enduml
+
+----
